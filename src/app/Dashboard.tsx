@@ -17,16 +17,22 @@ const Dashboard: React.FC<HomeProps> = () => {
   const [showModal, setShowModal] = useState(false);
 
   const handleSearch = useCallback(
-    _.debounce((searchTerm) => {
-      console.log("Searching for:", searchTerm);
+    _.debounce((serachValue) => {
+      axios
+        .get(`https://restcountries.com/v3.1/name/${serachValue}`)
+        .then((res) => {
+          setcountries(res?.data);
+        })
+        .catch((error) => console.log(error));
     }, 500),
     []
   );
 
   const handleSearchChange = (e: any) => {
     e.preventDefault(e);
-    setSearchValue(e.target.value);
-    handleSearch(e.target.value);
+    let searchText = e.target.value;
+    searchText ? handleSearch(searchText) : fetchApi();
+    setSearchValue(searchText);
   };
 
   const handleModalOpen = (country: string) => {
