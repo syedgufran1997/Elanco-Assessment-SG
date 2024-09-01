@@ -11,9 +11,11 @@ interface HomeProps {
 }
 
 const Dashboard: React.FC<HomeProps> = () => {
-  const [countries, setcountries] = useState<Country[]>([]);
-  const [serachValue, setSearchValue] = useState();
+  const [countries, setCountries] = useState<Country[]>([]);
   const [countryDetails, setCountryDetails] = useState<Country[]>([]);
+  const [filterOptions, setFilterOptions] = useState<Country[]>([]);
+  const [serachValue, setSearchValue] = useState("");
+  const [filterValue, setFilterValue] = useState("");
   const [showModal, setShowModal] = useState(false);
 
   const handleSearch = useCallback(
@@ -21,7 +23,7 @@ const Dashboard: React.FC<HomeProps> = () => {
       axios
         .get(`https://restcountries.com/v3.1/name/${serachValue}`)
         .then((res) => {
-          setcountries(res?.data);
+          setCountries(res?.data);
         })
         .catch((error) => console.log(error));
     }, 500),
@@ -51,11 +53,31 @@ const Dashboard: React.FC<HomeProps> = () => {
     setCountryDetails([]);
   };
 
+  const handleSortCountries = () => {
+    const sortedCountries = countries.sort(
+      (a, b) => a.population - b.population
+    );
+    setCountryDetails(sortedCountries);
+  };
+
+  const handleFilterCountries = (e: any) => {
+    const filterValue = e.target.value;
+    setFilterValue(filterValue);
+
+    if (filterValue && filterValue.length) {
+      const filteredCountries = countries.filter(
+        (country) => country.region === filterValue
+      );
+      setCountries(filteredCountries);
+    }
+  };
+
   const fetchApi = () => {
     axios
-      .get("https://restcountries.com/v3.1/all")
+      .get(`https://restcountries.com/v3.1/all`)
       .then((res) => {
-        setcountries(res?.data);
+        setCountries(res?.data);
+        setFilterOptions(res?.data);
       })
       .catch((error) => console.log(error));
   };
@@ -77,6 +99,37 @@ const Dashboard: React.FC<HomeProps> = () => {
             onChange={handleSearchChange}
             placeholder="Search Country"
           />
+          <button
+            onClick={() => {
+              setSearchValue("");
+              setFilterValue("");
+              fetchApi();
+            }}
+            className="border p-2 mx-4 shadow-md rounded-md "
+          >
+            Clear All
+          </button>
+
+          <button
+            onClick={handleSortCountries}
+            className="border p-2 mx-4 shadow-md rounded-md "
+          >
+            Sort Countries By Population
+          </button>
+
+          <select
+            value={filterValue}
+            onChange={handleFilterCountries}
+            className="border p-2 rounded-md shadow-md  "
+          >
+            <option value="">All</option>
+            {filterOptions &&
+              filterOptions?.map((item, index) => (
+                <option value={item.region} key={index}>
+                  {item.region}
+                </option>
+              ))}
+          </select>
         </div>
       </div>
 
@@ -84,9 +137,9 @@ const Dashboard: React.FC<HomeProps> = () => {
         {countries.length && countries ? (
           countries.map((country, index) => (
             <li
-              key={country.name.official}
+              key={country?.name?.official}
               className="w-2/12 m-3 border rounded-md cursor-pointer "
-              onClick={() => handleModalOpen(country.name.official)}
+              onClick={() => handleModalOpen(country?.name?.official)}
             >
               <div className="h-1/2 ">
                 <Image
@@ -101,14 +154,14 @@ const Dashboard: React.FC<HomeProps> = () => {
 
               <div className="h-1/2 bg-slate-100 p-2 flex flex-col justify-between ">
                 <h2 key={index}>
-                  Name: <span className="">{country.name.common} </span>
+                  Name: <span className="">{country?.name?.common} </span>
                 </h2>
                 {country?.capital?.map((item, i) => (
                   <p key={i}>Capital: {item}</p>
                 ))}
-                <p>Region: {country.region}</p>
-                <p>Subregion: {country.subregion}</p>
-                <p>Population: {country.population.toLocaleString()}</p>
+                <p>Region: {country?.region}</p>
+                <p>Subregion: {country?.subregion}</p>
+                <p>Population: {country?.population?.toLocaleString()}</p>
               </div>
             </li>
           ))
@@ -227,3 +280,6 @@ const Dashboard: React.FC<HomeProps> = () => {
 };
 
 export default Dashboard;
+function setFilterOoptions(region: any) {
+  throw new Error("Function not implemented.");
+}
