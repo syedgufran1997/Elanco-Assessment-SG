@@ -280,6 +280,3 @@ const Dashboard: React.FC<HomeProps> = () => {
 };
 
 export default Dashboard;
-function setFilterOoptions(region: any) {
-  throw new Error("Function not implemented.");
-}
